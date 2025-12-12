@@ -118,6 +118,7 @@
   <!-- Page 1: Countdown -->
   <section id="page1" class="page active" aria-label="Countdown">
     <div class="card">
+      <div id="hbcontainer" style="width:100%;display:flex;justify-content:center;margin-bottom:12px;pointer-events:none"></div>
       <div class="small">A little surprise starts soon. Close your eyes if you want.</div>
       <div id="countdown" class="countdown">00:00:10</div>
       <div class="small" id="countHint">Get ready...</div>
@@ -253,11 +254,19 @@ function revealHappyBirthday(){ // fade countdown out
   countdownEl.style.opacity = '0'; countdownEl.style.transform = 'scale(0.9)';
   // after fade completes, hide the countdown element to free space
   setTimeout(()=>{ countdownEl.style.display = 'none'; countHint.style.display = 'none';
-    // show the SVG happy birthday in popcard with animation
-    hbwrap.style.display = 'flex'; popcard.classList.add('show');
-    // push controls lower on the page to avoid overlap (adds class to the page card)
+    // move the SVG happy birthday into the hbcontainer (top of the card) and show it
+    const hbcontainer = document.getElementById('hbcontainer');
+    if(hbwrap && hbcontainer){
+      // detach hbwrap from its popcard parent and append to hbcontainer
+      if(hbwrap.parentElement) hbwrap.parentElement.removeChild(hbwrap);
+      hbcontainer.appendChild(hbwrap);
+      hbwrap.style.display = 'flex';
+    }
+    // ensure the controls sit well below (no overlap)
     const page1Card = document.querySelector('#page1 .card');
     if(page1Card) page1Card.classList.add('pop-active');
+    // hide the original popcard area
+    if(popcard) popcard.style.display = 'none';
   }, 650);
 }
 

@@ -112,7 +112,7 @@
 </style>
 </head>
 <body data-theme="dark">
-<button class="theme-toggle btn alt" id="themeToggle" title="Toggle theme">Toggle theme</button>
+<button class="theme-toggle btn alt" id="themeToggle" title="Toggle theme">🌙</button>
 <div class="container">
   <!-- Page 1: Countdown -->
   <section id="page1" class="page active" aria-label="Countdown">
@@ -222,7 +222,12 @@ else{ // respect system
   const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   setTheme(prefers);
 }
-themeToggle.addEventListener('click', ()=>{ const cur = document.body.getAttribute('data-theme'); setTheme(cur==='dark'?'light':'dark'); });
+themeToggle.addEventListener('click', ()=>{
+  const cur = document.body.getAttribute('data-theme');
+  const next = cur==='dark' ? 'light' : 'dark';
+  setTheme(next);
+  themeToggle.textContent = next==='dark' ? '🌙' : '☀️';
+}); setTheme(cur==='dark'?'light':'dark'); });
 
 /* ---------- Countdown logic with easing speed (kept as requested) ---------- */
 const countdownEl = document.getElementById('countdown');

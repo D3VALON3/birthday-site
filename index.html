@@ -277,11 +277,14 @@ function triggerConfetti(){ const total = 80; const colors = ['#b497ff','#ffd166
 
 /* ---------- Typewriter ---------- */
 const typewriterEl = document.getElementById('typewriter');
-const dummyWish = `Hey Panda,
+const dummyWish = `Panda,
 
-Today I want to tell you, without saying too much out loud, that you are my favorite part of every ordinary day. Your laugh, your silence, your tiny stubbornness — it all adds up to something I never want to lose.
+Jitna simple lagta hai na… utna hi mushkil hota hai tumhare liye sahi shabdon mein feel kar pana. Bas itna yaad rakhna — tum mere har din ka sabse meetha, sabse pyara hissa ho.
 
-Wishing you the sweetest year yet.`;
+Jaise tumne mere liye kaha tha… *“puri zindegi tumko wish kar pau birthday pe sabse pehle”* — wahi saath, wahi warmth, wahi feeling main bhi tumhare liye rakhta hoon.
+
+Stay close, stay happy… aur haan,
+I love you.`;
 let typingTimeouts = [];
 function startTypewriter(){ typewriterEl.textContent = ''; typingTimeouts.forEach(t=>clearTimeout(t)); typingTimeouts = []; const chars = dummyWish.split(''); let time = 0; let speedBase = 28; chars.forEach((ch, i) => { const extra = (ch === ',' || ch === '-') ? 140 : (ch === '.' ? 300 : 0); time += speedBase + Math.floor(Math.random() * 30) + extra; const t = setTimeout(()=>{ typewriterEl.textContent += ch; typewriterEl.scrollTop = typewriterEl.scrollHeight; }, time); typingTimeouts.push(t); }); }
 

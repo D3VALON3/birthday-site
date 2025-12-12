@@ -91,6 +91,7 @@
 .popmsg{ z-index:60; }
 .controls{ z-index:30; position:relative; }
 .card.pop-active .controls{ margin-top:48px; }
+.card.pop-active .controls-bottom{ margin-top:84px !important; }
 
 /* desktop tweak: slightly reduce SVG size on wide screens to avoid visual overlap */
 @media (min-width:960px){
@@ -111,7 +112,7 @@
 
 </style>
 </head>
-<body data-theme="dark" data-youtube-id="vwgugj2TZ-8">
+<body data-theme="dark">
 <button class="theme-toggle btn alt" id="themeToggle" title="Toggle theme">🌙</button>
 <div class="container">
   <!-- Page 1: Countdown -->
@@ -120,10 +121,6 @@
       <div class="small">A little surprise starts soon. Close your eyes if you want.</div>
       <div id="countdown" class="countdown">00:00:10</div>
       <div class="small" id="countHint">Get ready...</div>
-
-      <div class="controls" style="justify-content:center;margin-top:12px">
-        <button id="skipBtn" class="btn" style="background:rgba(255,255,255,0.06); color:var(--accent);">Skip</button>
-      </div>
 
       <div class="popmsg" aria-hidden="true">
         <div id="popcard" class="popcard" role="status" aria-live="polite">
@@ -140,20 +137,23 @@
                 </filter>
               </defs>
 
-              <!-- an arc path for the arched text -->
               <path id="arc" d="M60,180 A540,540 0 0,1 1140,180" fill="none" />
 
               <text font-family="'Abril Fatface', serif" font-weight="800" font-size="86" text-anchor="middle" fill="url(#g1)" filter="url(#shadow)">
                 <textPath href="#arc" startOffset="50%" method="align" spacing="auto">HAPPY BIRTHDAY</textPath>
               </text>
 
-              <!-- straight subtitle underneath -->
               <text x="50%" y="210" font-family="Inter, sans-serif" font-size="28" text-anchor="middle" fill="var(--text)">
                 🎉 May your year be full of love and laughter 🎉
               </text>
             </svg>
           </div>
         </div>
+      </div>
+
+      <!-- controls moved BELOW birthday popup -->
+      <div class="controls controls-bottom" style="justify-content:center;margin-top:24px">
+        <button id="skipBtn" class="btn" style="background:rgba(255,255,255,0.06); color:var(--accent);">Skip</button>
       </div>
     </div>
   </section>
@@ -261,7 +261,7 @@ function revealHappyBirthday(){ // fade countdown out
   }, 650);
 }
 
-function createNextButtonHint(){ const controls = document.querySelector('#page1 .controls'); if(document.getElementById('nextBtn')) return; const btn = document.createElement('button'); btn.id='nextBtn'; btn.className='btn'; btn.textContent='Next'; btn.onclick = ()=> { popcard.classList.remove('show'); showPage('page2'); startTypewriter(); }; controls.appendChild(btn); }
+function createNextButtonHint(){ const controls = document.querySelector('#page1 .controls-bottom'); if(document.getElementById('nextBtn')) return; const btn = document.createElement('button'); btn.id='nextBtn'; btn.className='btn'; btn.textContent='Next'; btn.onclick = ()=> { popcard.classList.remove('show'); showPage('page2'); startTypewriter(); }; controls.appendChild(btn); }
 
 /* ---------- Confetti ---------- */
 function triggerConfetti(){ const total = 80; const colors = ['#b497ff','#ffd166','#6be5ff','#7ef5a1','#c084fc','#ff9cc2']; for(let i=0;i<total;i++){ const piece = document.createElement('div'); piece.className = 'confetti-piece'; piece.style.background = colors[Math.floor(Math.random()*colors.length)]; const container = document.querySelector('.container'); const w = container.clientWidth; const h = container.clientHeight; const startX = w/2 + (Math.random()-0.5)*100; const startY = h/2 + (Math.random()-0.5)*20; piece.style.left = (startX)+'px'; piece.style.top = (startY)+'px'; document.body.appendChild(piece); const angle = (Math.random()*Math.PI*2); const distance = 120 + Math.random()*260; const tx = Math.cos(angle)*distance; const ty = - (200 + Math.random()*260); const rot = (Math.random()*360); piece.animate([ { transform: `translate(0px,0px) rotate(0deg)`, opacity:1 }, { transform: `translate(${tx}px, ${ty}px) rotate(${rot}deg)`, opacity:0.1 } ],{ duration: 1000 + Math.random()*800, easing: 'cubic-bezier(.2,.8,.2,1)' }); setTimeout(()=> piece.remove(), 2400); } }
@@ -280,79 +280,28 @@ function startTypewriter(){ typewriterEl.textContent = ''; typingTimeouts.forEac
 const videoElLocal = document.getElementById('birthdayVideo');
 const soundBtn = document.getElementById('soundBtn');
 let soundOn = false;
-let ytPlayer = null;
-let usingYouTube = false;
 
-function getQueryParam(name){ try{ const url = new URL(location.href); return url.searchParams.get(name); }catch(e){ return null; } }
-function extractYouTubeID(urlOrId){ if(!urlOrId) return null; const ytRegex = /(?:youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|v\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/i; const m = urlOrId.match(ytRegex); if(m && m[1]) return m[1]; if(urlOrId.length === 11) return urlOrId; return null; }
-function loadYouTubeAPI(callback){ if(window.YT && window.YT.Player){ callback(); return; } const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(tag); window.onYouTubeIframeAPIReady = callback; }
-function initVideoSection(){
-  const container = document.getElementById('videoContainer');
-  // prefer local video if available (relative path 'video.mp4' or any source set in the <video> tag)
-  const localVideo = document.getElementById('birthdayVideo');
-  let hasLocal = false;
-  try{
-    if(localVideo){
-      const srcEl = localVideo.querySelector('source');
-      const src = srcEl ? srcEl.getAttribute('src') : (localVideo.currentSrc || localVideo.src || '');
-      if(src && src.trim().length>0){
-        // treat as local if it ends with typical video extension or is a relative path
-        if(/\.(mp4|webm|ogg)(\?.*)?$/i.test(src) || !/^https?:\/\//i.test(src)){
-          hasLocal = true;
-        }
-      }
-    }
-  }catch(e){ hasLocal = false; }
-
-  if(hasLocal){
-    usingYouTube = false;
-    // ensure local video is visible and has proper layout
-    if(localVideo){
-      localVideo.style.display = 'block';
-      localVideo.style.width = '100%';
-      localVideo.style.maxHeight = '56vh';
-      localVideo.setAttribute('playsinline','');
-      localVideo.setAttribute('preload','metadata');
-      localVideo.muted = true; // autoplay muted
-      // try to play (returns promise)
-      const playPromise = localVideo.play();
-      if(playPromise && playPromise.then){ playPromise.catch(()=>{/* autoplay blocked until user interacts */}); }
-    }
-    return;
-  }
-
-  // otherwise try YouTube if an id is present
-  const bodyYt = document.body.getAttribute('data-youtube-id');
-  const queryYt = getQueryParam('yt');
-  const ytId = extractYouTubeID(bodyYt) || extractYouTubeID(queryYt);
-  if(ytId){
-    usingYouTube = true;
-    // replace local video element area with player holder
-    container.innerHTML = '<div id="ytPlayerHolder" style="width:100%;height:56vh;min-height:240px;border-radius:12px;overflow:hidden;"></div>';
-    loadYouTubeAPI(()=>{
-      try{
-        ytPlayer = new YT.Player('ytPlayerHolder', {
-          height: '360', width: '640', videoId: ytId,
-          playerVars: { autoplay: 1, playsinline: 1, mute: 1, loop: 1, playlist: ytId, controls: 1, modestbranding:1 },
-          events: { onReady: (e)=>{ /* ready */ } }
-        });
-      }catch(e){
-        const holder = document.getElementById('ytPlayerHolder');
-        if(holder) holder.innerHTML = '<iframe src="https://www.youtube.com/embed/'+ytId+'?autoplay=1&mute=1&playsinline=1&loop=1&playlist='+ytId+'" allow="autoplay; encrypted-media; accelerometer; clipboard-write; gyroscope; picture-in-picture" style="width:100%;height:100%;border:0;border-radius:12px"></iframe>';
-      }
-    });
-    setTimeout(()=>{
-      if(!ytPlayer){ const holder = document.getElementById('ytPlayerHolder'); if(holder && !holder.querySelector('iframe')) holder.innerHTML = '<iframe src="https://www.youtube.com/embed/'+ytId+'?autoplay=1&mute=1&playsinline=1&loop=1&playlist='+ytId+'" allow="autoplay; encrypted-media; accelerometer; clipboard-write; gyroscope; picture-in-picture" style="width:100%;height:100%;border:0;border-radius:12px"></iframe>'; }
-    },1200);
-  } else {
-    usingYouTube = false;
+// Prefer local video playback only. Ensure the local video element is visible and autoplaying muted (browsers allow muted autoplay).
+function ensureLocalVideo(){
+  const localVideo = videoElLocal;
+  if(localVideo){
+    localVideo.style.display = 'block';
+    localVideo.style.width = '100%';
+    localVideo.style.maxHeight = '56vh';
+    localVideo.setAttribute('playsinline','');
+    localVideo.setAttribute('preload','metadata');
+    localVideo.muted = true; // autoplay muted
+    const playPromise = localVideo.play();
+    if(playPromise && playPromise.catch) playPromise.catch(()=>{/* autoplay blocked until user interacts */});
   }
 }
-initVideoSection();
+ensureLocalVideo();
 
 soundBtn.addEventListener('click', ()=>{
-  if(usingYouTube){ if(!ytPlayer) return; soundOn = !soundOn; if(soundOn) ytPlayer.unMute(); else ytPlayer.mute(); soundBtn.textContent = soundOn ? 'Mute' : 'Unmute'; }
-  else { if(!videoElLocal) return; soundOn = !soundOn; videoElLocal.muted = !soundOn; soundBtn.textContent = soundOn ? 'Mute' : 'Unmute'; }
+  if(!videoElLocal) return;
+  soundOn = !soundOn;
+  videoElLocal.muted = !soundOn;
+  soundBtn.textContent = soundOn ? 'Mute' : 'Unmute';
 });
 
 /* ---------- falling decorative elements (hearts, sparkles, pandas) ---------- */

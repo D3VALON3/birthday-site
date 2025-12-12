@@ -176,13 +176,12 @@
   <section id="page3" class="page" aria-label="Video">
     <div class="card">
       <!-- Video area: the page will prefer YouTube if a ?yt= query param or body[data-youtube-id] is present. Otherwise it will fall back to local video.mp4 -->
-      <div id="videoContainer" style="width:100%;min-height:260px;display:flex;align-items:center;justify-content:center;">
-        <video id="birthdayVideo" playsinline autoplay muted loop controls poster="" style="width:100%;height:auto;max-height:56vh;object-fit:contain;border-radius:12px;background:#000;">
-          <!-- Place a file named 'video.mp4' in the same folder as this HTML, or change the src attribute to a hosted MP4 URL -->
-          <source src="video.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-      </div>
+      <div id="videoContainer" style="width:100%;min-height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="font-size:18px;color:var(--text);margin-bottom:8px;">Tap below to watch the video</div>
+  <a href="https://youtube.com/shorts/vwgugj2TZ-8" target="_blank" style="text-decoration:none;">
+    <button class="btn" style="font-size:18px;padding:14px 22px;">Open Video on YouTube</button>
+  </a>
+</div>
 
       <div class="video-controls">
         <button id="soundBtn" class="btn">Unmute</button>

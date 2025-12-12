@@ -87,8 +87,7 @@
 
   /* subtle floating animation for SVG container */
   @keyframes floatSway{ 0%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } 100%{ transform:translateY(0); } }
-  $1
-/* ensure popcard stacks above controls and push controls down when active */
+  /* ensure popcard stacks above controls and push controls down when active */
 .popmsg{ z-index:60; }
 .controls{ z-index:30; position:relative; }
 .card.pop-active .controls{ margin-top:48px; }
@@ -273,17 +272,22 @@ let typingTimeouts = [];
 function startTypewriter(){ typewriterEl.textContent = ''; typingTimeouts.forEach(t=>clearTimeout(t)); typingTimeouts = []; const chars = dummyWish.split(''); let time = 0; let speedBase = 28; chars.forEach((ch, i) => { const extra = (ch === ',' || ch === '-') ? 140 : (ch === '.' ? 300 : 0); time += speedBase + Math.floor(Math.random() * 30) + extra; const t = setTimeout(()=>{ typewriterEl.textContent += ch; typewriterEl.scrollTop = typewriterEl.scrollHeight; }, time); typingTimeouts.push(t); }); }
 
 /* ---------- Sound control / video ---------- */
-const videoEl = document.getElementById('birthdayVideo');
+const videoElLocal = document.getElementById('birthdayVideo');
 const soundBtn = document.getElementById('soundBtn');
 let soundOn = false;
-soundBtn.addEventListener('click', ()=>{
-  if(!videoEl) return;
-  soundOn = !soundOn;
-  videoEl.muted = !soundOn;
-  soundBtn.textContent = soundOn ? 'Mute' : 'Unmute';
-});
+let ytPlayer = null;
+let usingYouTube = false;
 
-/* auto-unmute advice: some browsers block autoplay with sound; we'll keep autoplay muted and let user enable sound explicitly (via button above). */
+function getQueryParam(name){ try{ const url = new URL(location.href); return url.searchParams.get(name); }catch(e){ return null; } }
+function extractYouTubeID(urlOrId){ if(!urlOrId) return null; const ytRegex = /(?:youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|v\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/i; const m = urlOrId.match(ytRegex); if(m && m[1]) return m[1]; if(urlOrId.length === 11) return urlOrId; return null; }
+function loadYouTubeAPI(callback){ if(window.YT && window.YT.Player){ callback(); return; } const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(tag); window.onYouTubeIframeAPIReady = callback; }
+function initVideoSection(){ const bodyYt = document.body.getAttribute('data-youtube-id'); const queryYt = getQueryParam('yt'); const ytId = extractYouTubeID(bodyYt) || extractYouTubeID(queryYt); if(ytId){ usingYouTube = true; const container = document.getElementById('videoContainer'); container.innerHTML = '<div id="ytPlayerHolder" style="width:100%;height:100%;max-height:56vh"></div>'; loadYouTubeAPI(()=>{ ytPlayer = new YT.Player('ytPlayerHolder', { height: '360', width: '640', videoId: ytId, playerVars: { autoplay: 1, playsinline: 1, mute: 1, loop: 1, playlist: ytId, controls: 1, modestbranding:1 }, events: { onReady: (e)=>{ /* ready */ } } }); }); } }
+initVideoSection();
+
+soundBtn.addEventListener('click', ()=>{
+  if(usingYouTube){ if(!ytPlayer) return; soundOn = !soundOn; if(soundOn) ytPlayer.unMute(); else ytPlayer.mute(); soundBtn.textContent = soundOn ? 'Mute' : 'Unmute'; }
+  else { if(!videoElLocal) return; soundOn = !soundOn; videoElLocal.muted = !soundOn; soundBtn.textContent = soundOn ? 'Mute' : 'Unmute'; }
+});
 
 /* ---------- falling decorative elements (hearts, sparkles, pandas) ---------- */
 function spawnDecorativeFallers(){

@@ -176,10 +176,11 @@
   <section id="page3" class="page" aria-label="Video">
     <div class="card">
       <!-- Video area: the page will prefer YouTube if a ?yt= query param or body[data-youtube-id] is present. Otherwise it will fall back to local video.mp4 -->
-      <div id="videoContainer">
-        <video id="birthdayVideo" playsinline preload="metadata" autoplay muted loop controls>
+      <div id="videoContainer" style="width:100%;min-height:260px;display:flex;align-items:center;justify-content:center;">
+        <video id="birthdayVideo" playsinline autoplay muted loop controls poster="" style="width:100%;height:auto;max-height:56vh;object-fit:contain;border-radius:12px;background:#000;">
+          <!-- Place a file named 'video.mp4' in the same folder as this HTML, or change the src attribute to a hosted MP4 URL -->
           <source src="video.mp4" type="video/mp4">
-          Your browser does not support the video tag. Place a file named "video.mp4" in the same folder as this HTML on GitHub, or add a YouTube id via the ?yt= query parameter.
+          Your browser does not support the video tag.
         </video>
       </div>
 
